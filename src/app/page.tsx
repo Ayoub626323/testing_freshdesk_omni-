@@ -8,16 +8,32 @@ export default function Home() {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
-        /* This hides standard scrollbars and centers the chat */
-        body { 
+        /* Reset and preparation */
+        body, html { 
             margin: 0; 
             padding: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background-color: transparent;
             overflow: hidden;
+        }
+
+        /* 
+         * Magic CSS: Force the Freshdesk iframe wrapper to occupy 100% of our embedded view.
+         * This completely removes the "floating bubble" aspect and turns it into a full page app!
+         */
+        body iframe#freshworks-frame {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            bottom: 0 !important;
+            right: 0 !important;
+            left: 0 !important;
+            top: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 0 1.5rem 1.5rem !important;
+            z-index: 999999999 !important;
         }
       </style>
       <script>
@@ -28,12 +44,16 @@ export default function Home() {
             widgetId: "01KP69FR7HA0WKJNWEC2J029JT"
           });
           
-          // Force open the widget to simulate an embedded native experience
-          setTimeout(function() {
-             if (window.fdWidget && window.fdWidget.open) {
-                window.fdWidget.open();
-             }
-          }, 1000);
+          // Wait reliably for the widget to load before triggering open
+          window.fdWidget.on('widget:loaded', function() {
+             window.fdWidget.open();
+             
+             // Ensure the chat is shown by hiding the launcher button if necessary
+             setTimeout(() => {
+                const fwButton = document.getElementById('freshworks-widget-button');
+                if (fwButton) fwButton.style.display = 'none';
+             }, 500);
+          });
         }
 
         function initialize(i,t){var e;i.getElementById(t)?initFreshdesk():((e=i.createElement("script")).id=t,e.async=!0,e.src="https://sabriayoub2026success.freshdesk.com/webchat/js/widget.js",e.onload=initFreshdesk,i.head.appendChild(e))}function initiateCall(){initialize(document,"Freshdesk-js-sdk")}window.addEventListener?window.addEventListener("load",initiateCall,!1):window.attachEvent("load",initiateCall,!1);
@@ -46,7 +66,6 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 font-sans">
-      {/* Header simulateur d'une plateforme métier */}
       <header className="flex items-center justify-between bg-white px-8 py-4 shadow-sm">
          <div className="flex items-center space-x-3">
              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 shadow-md">
@@ -71,20 +90,17 @@ export default function Home() {
             </p>
         </div>
 
-        {/* Le conteneur du chat "Embedded" */}
         <div className="relative w-full max-w-lg h-[650px] bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200 ring-4 ring-slate-900/5">
           <div className="absolute top-0 left-0 right-0 h-12 bg-slate-50 border-b border-slate-100 flex items-center px-4 space-x-2 z-10">
               <div className="h-3 w-3 rounded-full bg-red-400"></div>
               <div className="h-3 w-3 rounded-full bg-amber-400"></div>
               <div className="h-3 w-3 rounded-full bg-emerald-400"></div>
           </div>
-          <div className="pt-12 w-full h-full bg-[#f4f6f8]">
-            {/* L'iframe sert de sandbox pour éviter les conflits et forcer la vue encapsulée */}
+          <div className="absolute top-12 bottom-0 left-0 right-0 bg-[#f4f6f8]">
             <iframe 
               srcDoc={htmlContent} 
               className="w-full h-full border-0 rounded-b-3xl"
               title="Freshdesk Chat Embedded Widget"
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
           </div>
         </div>
